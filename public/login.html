@@ -18,6 +18,14 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- //loading start // -->
+    <div id="loadingScreen" style="display: none">
+      <div>
+        <img src="./loading.svg" style="height: 60px" />
+      </div>
+    </div>
+    <!-- loading ends -->
+
     <div
       class="container single-screen d-flex justify-content-center align-items-center"
     >
@@ -78,12 +86,15 @@
 
         $("input").attr("disabled", true);
         $("button").attr("disabled", true);
+        $("#loadingScreen").show();
         $.ajax({
           url: "/api/login",
           method: "POST",
           dataType: "json",
           data: user,
           success: (res) => {
+            $("#loadingScreen").hide();
+
             localStorage.setItem("_token", res._token);
             Swal.fire({
               position: "middle-center",
@@ -100,6 +111,7 @@
           error: (res, rescode, msg) => {
             $("input").attr("disabled", false);
             $("button").attr("disabled", false);
+            $("#loadingScreen").hide();
 
             Swal.fire({
               position: "middle-center",

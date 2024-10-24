@@ -18,6 +18,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- //loading start // -->
+    <div id="loadingScreen" style="display: none">
+      <div>
+        <img src="./loading.svg" style="height: 60px" />
+      </div>
+    </div>
+    <!-- loading ends -->
     <div
       class="container single-screen d-flex justify-content-center align-items-center"
     >
@@ -86,6 +93,7 @@
           emailId: $("#emailId").val(),
           password: $("#password").val(),
         };
+        $("#loadingScreen").show();
 
         $("input").attr("disabled", true);
         $("button").attr("disabled", true);
@@ -95,6 +103,8 @@
           dataType: "json",
           data: newUser,
           success: (res) => {
+            $("#loadingScreen").hide();
+
             Swal.fire({
               position: "middle-center",
               icon: "success",
@@ -110,6 +120,7 @@
           error: (res, rescode, msg) => {
             $("input").attr("disabled", false);
             $("button").attr("disabled", false);
+            $("#loadingScreen").hide();
 
             Swal.fire({
               position: "middle-center",

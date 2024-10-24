@@ -18,6 +18,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- //loading start // -->
+    <div id="loadingScreen" style="display: none">
+      <div>
+        <img src="./loading.svg" style="height: 60px" />
+      </div>
+    </div>
+    <!-- loading ends -->
     <nav class="navbar bg-white shadow-sm">
       <div class="container col-12 col-md-5">
         <a class="navbar-brand d-flex align-items-center gap-1" href="#">
@@ -157,6 +164,7 @@
 
         $("input").attr("disabled", true);
         $("button").attr("disabled", true);
+        $("#loadingScreen").show();
 
         $.ajax({
           url: "/api/addTask",
@@ -166,10 +174,14 @@
           success: (res) => {
             $("input").attr("disabled", false);
             $("button").attr("disabled", false);
+            $("#loadingScreen").hide();
+
             $("#task").val("");
             getUserInfo();
           },
           error: (res) => {
+            $("#loadingScreen").hide();
+
             console.log(res);
             $("input").attr("disabled", false);
             $("button").attr("disabled", false);
@@ -191,6 +203,8 @@
           _token: localStorage.getItem("_token"),
         };
 
+        $("#loadingScreen").show();
+
         $.ajax({
           url: "/api/removeTask",
           method: "POST",
@@ -198,9 +212,11 @@
           data: task,
           success: (res) => {
             getUserInfo();
+            $("#loadingScreen").hide();
           },
           error: (res) => {
             console.log(res);
+            $("#loadingScreen").hide();
 
             Swal.fire({
               position: "middle-center",
@@ -219,6 +235,7 @@
           _token: localStorage.getItem("_token"),
           status: true,
         };
+        $("#loadingScreen").show();
 
         $.ajax({
           url: "/api/updateTask",
@@ -227,9 +244,11 @@
           data: task,
           success: (res) => {
             getUserInfo();
+            $("#loadingScreen").hide();
           },
           error: (res) => {
             console.log(res);
+            $("#loadingScreen").hide();
 
             Swal.fire({
               position: "middle-center",
@@ -248,6 +267,7 @@
           _token: localStorage.getItem("_token"),
           status: false,
         };
+        $("#loadingScreen").show();
 
         $.ajax({
           url: "/api/updateTask",
@@ -256,9 +276,11 @@
           data: task,
           success: (res) => {
             getUserInfo();
+            $("#loadingScreen").hide();
           },
           error: (res) => {
             console.log(res);
+            $("#loadingScreen").hide();
 
             Swal.fire({
               position: "middle-center",
@@ -272,6 +294,8 @@
       });
 
       $("#logout").click(function () {
+        $("#loadingScreen").show();
+
         localStorage.removeItem("_token");
         location.href = "/";
       });
