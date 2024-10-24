@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TodoBook - Todos</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar bg-white shadow-sm">
+      <div class="container col-12 col-md-5">
+        <a class="navbar-brand d-flex align-items-center gap-1" href="#">
+          <img
+            src="./icon.png"
+            alt="Logo"
+            height="24"
+            class="d-inline-block align-text-top"
+          />
+          <div class="d-flex">
+            <div class="fs-5">Todo</div>
+            <div class="fs-5 fw-bold">Book</div>
+          </div>
+        </a>
+
+        <button id="logout" class="btn btn-danger btn-sm">
+          <i class="bi bi-power"></i> Logout
+        </button>
+      </div>
+    </nav>
+
+    <div class="container col-12 col-md-5">
+      <div class="bg-white rounded rounded-3 mt-3 shadow-sm p-3">
+        <div class="fs-2 text-center">Hello, <span id="name">User</span></div>
+
+        <div>
+          <div class="input-group my-3">
+            <input
+              type="text"
+              class="form-control"
+              id="task"
+              placeholder="Write your task here !"
+              aria-label="Recipient's username"
+              aria-describedby="button-addon2"
+            />
+            <button class="btn btn-primary" type="button" id="submitForm">
+              <i class="bi bi-plus-circle-dotted"></i> Add
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded rounded-3 mt-3 shadow-sm p-3">
+        <div class="fs-4 text-center fw-bold mb-3">
+          <i class="bi bi-check2-square"></i> Todo Tasks
+        </div>
+        <ul class="list-group" id="tasks"></ul>
+        <div id="notaskmsg" class="small text-center text-secondary">
+          No tasks available !
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.js"
+      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      const getUserInfo = () => {
+        $.ajax({
+          url: "/api/checkUserAuth",
+          method: "POST",
+          dataType: "json",
+          data: {
+            _token: localStorage.getItem("_token"),
+          },
+          success: (res) => {
+            $("#name").text(res.fullName);
+
+            let tasks = res.tasks.map((task) => {
+              return ` <li
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                 <span class="${
+                   task.isCompleted ? "text-decoration-line-through" : ""
+                 }"> ${task.title}</span>
+
+                  <div>
+
+                    <span data-tid="${
+                      task._id
+                    }" class="badge text-bg-primary rounded-pill taskDone ${
+                task.isCompleted ? "d-none" : ""
+              }"><i class="bi bi-check-lg"></i></span>
+
+              <span data-tid="${
+                task._id
+              }" class="badge text-bg-dark rounded-pill taskUndone ${
+                task.isCompleted ? "" : "d-none"
+              }"><i class="bi bi-arrow-clockwise"></i></span>
+
+      <span class="badge text-bg-danger rounded-pill removeTask" data-tid="${
+        task._id
+      }"><i class="bi bi-trash"></i></span>
+                    </div>
+
+                </li>`;
+            });
+            $("#tasks").html(tasks);
+
+            if (res.tasks.length > 0) $("#notaskmsg").hide();
+            else $("#notaskmsg").show();
+          },
+          error: (res) => {
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: "You are not logged in",
+              showConfirmButton: false,
+              timer: 15000,
+            });
+
+            setTimeout(() => {
+              location.href = "/";
+            }, 1500);
+          },
+        });
+      };
+
+      $(function () {
+        getUserInfo();
+      });
+
+      $("#submitForm").click(function () {
+        const task = {
+          title: $("#task").val(),
+          _token: localStorage.getItem("_token"),
+        };
+
+        $("input").attr("disabled", true);
+        $("button").attr("disabled", true);
+
+        $.ajax({
+          url: "/api/addTask",
+          method: "POST",
+          dataType: "json",
+          data: task,
+          success: (res) => {
+            $("input").attr("disabled", false);
+            $("button").attr("disabled", false);
+            $("#task").val("");
+            getUserInfo();
+          },
+          error: (res) => {
+            console.log(res);
+            $("input").attr("disabled", false);
+            $("button").attr("disabled", false);
+
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: res.responseJSON.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          },
+        });
+      });
+
+      $(document).on("click", ".removeTask", function () {
+        const task = {
+          _id: $(this).data("tid"),
+          _token: localStorage.getItem("_token"),
+        };
+
+        $.ajax({
+          url: "/api/removeTask",
+          method: "POST",
+          dataType: "json",
+          data: task,
+          success: (res) => {
+            getUserInfo();
+          },
+          error: (res) => {
+            console.log(res);
+
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: res.responseJSON.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          },
+        });
+      });
+
+      $(document).on("click", ".taskDone", function () {
+        const task = {
+          _id: $(this).data("tid"),
+          _token: localStorage.getItem("_token"),
+          status: true,
+        };
+
+        $.ajax({
+          url: "/api/updateTask",
+          method: "POST",
+          dataType: "json",
+          data: task,
+          success: (res) => {
+            getUserInfo();
+          },
+          error: (res) => {
+            console.log(res);
+
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: res.responseJSON.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          },
+        });
+      });
+
+      $(document).on("click", ".taskUndone", function () {
+        const task = {
+          _id: $(this).data("tid"),
+          _token: localStorage.getItem("_token"),
+          status: false,
+        };
+
+        $.ajax({
+          url: "/api/updateTask",
+          method: "POST",
+          dataType: "json",
+          data: task,
+          success: (res) => {
+            getUserInfo();
+          },
+          error: (res) => {
+            console.log(res);
+
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: res.responseJSON.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          },
+        });
+      });
+
+      $("#logout").click(function () {
+        localStorage.removeItem("_token");
+        location.href = "/";
+      });
+    </script>
+  </body>
+</html>

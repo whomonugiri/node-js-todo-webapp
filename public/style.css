@@ -1,0 +1,9 @@
+body {
+  background-color: rgba(92, 190, 255, 0.5);
+  margin: 0px;
+}
+
+.single-screen {
+  width: 100vw;
+  height: 100vh;
+}

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TodoBook - Login</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="icon" href="icon.png" type="image/png" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div
+      class="container single-screen d-flex justify-content-center align-items-center"
+    >
+      <div
+        class="col-12 col-md-5 px-5 py-4 bg-white shadow-sm rounded rounded-4"
+      >
+        <div class="d-flex justify-content-center align-items-center gap-1">
+          <img src="./icon.png" style="height: 40px" />
+          <div class="d-flex">
+            <div class="fs-1">Todo</div>
+            <div class="fs-1 fw-bold">Book</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="exampleInputEmail1" class="form-label"
+            >Email address</label
+          >
+          <input
+            type="email"
+            class="form-control"
+            id="emailId"
+            aria-describedby="emailHelp"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="exampleInputPassword1" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" />
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <button type="submit" class="btn btn-primary" id="submitForm">
+            Login <i class="bi bi-arrow-right-circle"></i>
+          </button>
+
+          <a href="/signup" class="text-decoration-none">Create new account</a>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.js"
+      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      $("#submitForm").click(function () {
+        const user = {
+          emailId: $("#emailId").val(),
+          password: $("#password").val(),
+        };
+
+        $("input").attr("disabled", true);
+        $("button").attr("disabled", true);
+        $.ajax({
+          url: "/api/login",
+          method: "POST",
+          dataType: "json",
+          data: user,
+          success: (res) => {
+            localStorage.setItem("_token", res._token);
+            Swal.fire({
+              position: "middle-center",
+              icon: "success",
+              title: res.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            setTimeout(() => {
+              location.href = "/todolist";
+            }, 1500);
+          },
+          error: (res, rescode, msg) => {
+            $("input").attr("disabled", false);
+            $("button").attr("disabled", false);
+
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: res.responseJSON.msg,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          },
+        });
+      });
+
+      const getUserInfo = () => {
+        $.ajax({
+          url: "/api/checkUserAuth",
+          method: "POST",
+          dataType: "json",
+          data: {
+            _token: localStorage.getItem("_token"),
+          },
+          success: (res) => {
+            Swal.fire({
+              position: "middle-center",
+              icon: "info",
+              title: "You are already logged in",
+              showConfirmButton: false,
+              timer: 15000,
+            });
+
+            setTimeout(() => {
+              location.href = "/todolist";
+            }, 1500);
+          },
+        });
+      };
+
+      $(function () {
+        getUserInfo();
+      });
+    </script>
+  </body>
+</html>
